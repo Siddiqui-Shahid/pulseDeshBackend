@@ -1,0 +1,17 @@
+[
+  {
+    "id": "mmg6nefb-508ed5c5",
+    "username": "testuser",
+    "email": "test@example.com",
+    "passwordHash": "e2b8ba778edfcbccd1b5d48e702080acdc52fef64129cb235ce5d3fc8298002022daa93e30bd293de9fee47002dca1af2b93f9de7e8970529c66919b0d186c3f",
+    "salt": "6dc0f7264de9167e6feeaec127f084a4",
+    "passwordMetadata": {
+      "caseSensitive": true,
+      "requiresUpperCase": true,
+      "requiresLowerCase": true,
+      "requiresNumber": true,
+      "minimumLength": 8
+    },
+    "createdAt": "2026-03-07T10:30:49.799Z"
+  }
+]

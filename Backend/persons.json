@@ -1,10 +1,10 @@
 [
   {
-    "id": "mmg6nefb-508ed5c5",
-    "username": "testuser",
-    "email": "test@example.com",
-    "passwordHash": "e2b8ba778edfcbccd1b5d48e702080acdc52fef64129cb235ce5d3fc8298002022daa93e30bd293de9fee47002dca1af2b93f9de7e8970529c66919b0d186c3f",
-    "salt": "6dc0f7264de9167e6feeaec127f084a4",
+    "id": "mmhj4tfm-a068b156",
+    "username": "test",
+    "email": "test1@email.com",
+    "passwordHash": "97901fdf698d52334903e3b21064d9174acc435630d942ddce176370b3be779042f87482ca33a693a165685e01abb226ef9ececcdff1f8a24381539f6be93686",
+    "salt": "d4354000919e27c5f4d52ffdc941c827",
     "passwordMetadata": {
       "caseSensitive": true,
       "requiresUpperCase": true,
@@ -12,6 +12,36 @@
       "requiresNumber": true,
       "minimumLength": 8
     },
-    "createdAt": "2026-03-07T10:30:49.799Z"
+    "createdAt": "2026-03-08T09:08:03.970538Z"
+  },
+  {
+    "id": "mmq0f8yr-3538afc5",
+    "username": "test2",
+    "email": "test2@email.com",
+    "passwordHash": "3eb97304d0b8f52f40ba4fed4d334f01e8a8cd31617ca500f555d5d7b4b148f9de567dbd22967ebfeacc943588e3dbba76612d8a6187e3230a44e96f2d3946bd",
+    "salt": "0b53f6ab2edf723c4a6ec392550b1232",
+    "passwordMetadata": {
+      "caseSensitive": true,
+      "requiresUpperCase": true,
+      "requiresLowerCase": true,
+      "requiresNumber": true,
+      "minimumLength": 8
+    },
+    "createdAt": "2026-03-14T07:34:13.539Z"
+  },
+  {
+    "id": "mmq0hnjj-7e173c65",
+    "username": "test3",
+    "email": "test3@email.com",
+    "passwordHash": "15643f3f4d7987e474f73268fd0b53eb42cc3abfa9fddbc9ffbf24c1f6cc98f3469c77837f452cc5a8a24d962c0b485123a0238fe9b9935ee6bb79413fe786ee",
+    "salt": "e87db9ff7a59970068d22e208ab87b22",
+    "passwordMetadata": {
+      "caseSensitive": true,
+      "requiresUpperCase": true,
+      "requiresLowerCase": true,
+      "requiresNumber": true,
+      "minimumLength": 8
+    },
+    "createdAt": "2026-03-14T07:36:05.743Z"
   }
 ]

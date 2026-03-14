@@ -1,0 +1,19 @@
+# Go build output
+pulse-backend-go
+pulse-backend
+*.exe
+
+# Go test cache
+*.test
+
+# Environment files
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Node.js (legacy – keeping for reference)
+node_modules/
+npm-debug.log*

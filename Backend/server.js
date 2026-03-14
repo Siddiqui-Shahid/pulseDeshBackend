@@ -34,8 +34,10 @@ async function writeUsers(users) {
   await fs.writeFile(DB_FILE, JSON.stringify(users, null, 2), 'utf8');
 }
 
-function hashPassword(password, salt) {
-  const hash = crypto.pbkdf2Sync(password, salt, 100000, 64, 'sha512');
+function hashPassword(password, saltHex) {
+  // Convert hex string back to Buffer (salt is stored as hex in JSON)
+  const saltBuffer = Buffer.from(saltHex, 'hex');
+  const hash = crypto.pbkdf2Sync(password, saltBuffer, 100000, 64, 'sha512');
   return hash.toString('hex');
 }
 
@@ -56,8 +58,9 @@ function createErrorResponse(code, message, details = null, hint = null) {
   };
 }
 
-function verifyPassword(password, hash, salt) {
-  const computed = hashPassword(password, salt);
+function verifyPassword(password, hash, saltHex) {
+  // Ensure strict case-sensitive comparison
+  const computed = hashPassword(password, saltHex);
   return computed === hash;
 }
 

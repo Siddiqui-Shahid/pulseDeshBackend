@@ -1,0 +1,838 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>server: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">pulse-backend/cmd/server/main.go (19.4%)</option>
+				
+				<option value="file1">pulse-backend/internal/auth/service.go (83.8%)</option>
+				
+				<option value="file2">pulse-backend/internal/crypto/crypto.go (88.9%)</option>
+				
+				<option value="file3">pulse-backend/internal/db/db.go (0.0%)</option>
+				
+				<option value="file4">pulse-backend/internal/handlers/auth.go (0.0%)</option>
+				
+				<option value="file5">pulse-backend/internal/models/user.go (0.0%)</option>
+				
+				<option value="file6">pulse-backend/internal/response/response.go (0.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">no coverage</span>
+				<span class="cov1">low coverage</span>
+				<span class="cov2">*</span>
+				<span class="cov3">*</span>
+				<span class="cov4">*</span>
+				<span class="cov5">*</span>
+				<span class="cov6">*</span>
+				<span class="cov7">*</span>
+				<span class="cov8">*</span>
+				<span class="cov9">*</span>
+				<span class="cov10">high coverage</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">package main
+
+import (
+        "fmt"
+        "log"
+        "net/http"
+        "os"
+        "path/filepath"
+        "pulse-backend/internal/db"
+        "pulse-backend/internal/handlers"
+        "github.com/gorilla/mux"
+)
+
+func init() <span class="cov8" title="1">{
+        // Determine database file path
+        exePath, err := os.Executable()
+        if err != nil </span><span class="cov0" title="0">{
+                exePath = "."
+        }</span>
+        <span class="cov8" title="1">baseDir := filepath.Dir(exePath)
+        dbPath := filepath.Join(baseDir, "persons.json")
+        db.Init(dbPath)
+        log.Printf("Database initialized: %s", dbPath)</span>
+}
+
+func main() <span class="cov0" title="0">{
+        r := mux.NewRouter()
+
+        // Middleware
+        r.Use(loggingMiddleware)
+        r.Use(corsMiddleware)
+
+        // Routes
+        r.HandleFunc("/auth/signup", handlers.SignupHandler).Methods("POST")
+        r.HandleFunc("/auth/login", handlers.LoginHandler).Methods("POST")
+        r.HandleFunc("/api/users", handlers.UsersHandler).Methods("GET")
+        r.HandleFunc("/api/health", handlers.HealthHandler).Methods("GET")
+        r.NotFoundHandler = http.HandlerFunc(handlers.NotFoundHandler)
+
+        // Start server
+        port := "3000"
+        addr := fmt.Sprintf(":%s", port)
+        log.Printf("Server starting on http://localhost%s", addr)
+        if err := http.ListenAndServe(addr, r); err != nil </span><span class="cov0" title="0">{
+                log.Fatalf("Server error: %v", err)
+        }</span>
+}
+
+// loggingMiddleware logs all HTTP requests
+func loggingMiddleware(next http.Handler) http.Handler <span class="cov0" title="0">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                log.Printf("[%s] %s %s", r.Method, r.URL.Path, r.RemoteAddr)
+                next.ServeHTTP(w, r)
+        }</span>)
+}
+
+// corsMiddleware adds CORS headers
+func corsMiddleware(next http.Handler) http.Handler <span class="cov0" title="0">{
+        return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) </span><span class="cov0" title="0">{
+                w.Header().Set("Access-Control-Allow-Origin", "*")
+                w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+                w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+                if r.Method == "OPTIONS" </span><span class="cov0" title="0">{
+                        w.WriteHeader(http.StatusOK)
+                        return
+                }</span>
+                <span class="cov0" title="0">next.ServeHTTP(w, r)</span>
+        })
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">package auth
+
+import (
+        "time"
+        "pulse-backend/internal/crypto"
+        "pulse-backend/internal/db"
+        "pulse-backend/internal/models"
+)
+
+// Signup creates a new user account.
+func Signup(req models.SignupRequest) (*models.User, *models.ErrorResponse) <span class="cov10" title="32">{
+        // Validate password strength
+        validation := crypto.ValidatePasswordStrength(req.Password)
+        if !validation.IsValid </span><span class="cov6" title="7">{
+                return nil, &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "WEAK_PASSWORD",
+                                Message: "Password does not meet requirements",
+                                Details: validation.Errors,
+                                Hint:    "Password must be at least 8 characters with uppercase, lowercase, and number",
+                        },
+                }
+        }</span>
+
+        // Read existing users
+        <span class="cov9" title="25">users, err := db.ReadUsers()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "DB_ERROR",
+                                Message: "Failed to read user database",
+                                Details: err.Error(),
+                                Hint:    "Please try again later",
+                        },
+                }
+        }</span>
+
+        // Check if user exists
+        <span class="cov9" title="25">for _, u := range users </span><span class="cov8" title="19">{
+                if u.Email == req.Email || u.Username == req.Username </span><span class="cov3" title="3">{
+                        return nil, &amp;models.ErrorResponse{
+                                Success: false,
+                                Error: models.ErrorDetail{
+                                        Code:    "USER_EXISTS",
+                                        Message: "User already exists",
+                                        Details: map[string]string{
+                                                "email":    req.Email,
+                                                "username": req.Username,
+                                        },
+                                        Hint: "Use a different email or try logging in",
+                                },
+                        }
+                }</span>
+        }
+
+        // Generate salt and hash password
+        <span class="cov9" title="22">salt, err := crypto.GenerateSalt()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "CRYPTO_ERROR",
+                                Message: "Failed to generate salt",
+                                Details: err.Error(),
+                                Hint:    "Please try again",
+                        },
+                }
+        }</span>
+
+        <span class="cov9" title="22">hash, err := crypto.HashPassword(req.Password, salt)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "CRYPTO_ERROR",
+                                Message: "Failed to hash password",
+                                Details: err.Error(),
+                                Hint:    "Please try again",
+                        },
+                }
+        }</span>
+
+        // Create new user
+        <span class="cov9" title="22">newUser := models.User{
+                ID:           crypto.GenerateID(),
+                Username:     req.Username,
+                Email:        req.Email,
+                PasswordHash: hash,
+                Salt:         salt,
+                PasswordMetadata: models.PasswordMetadata{
+                        CaseSensitive:     true,
+                        RequiresUpperCase: true,
+                        RequiresLowerCase: true,
+                        RequiresNumber:    true,
+                        MinimumLength:     8,
+                },
+                CreatedAt: time.Now().UTC().Format(time.RFC3339),
+        }
+
+        // Save user
+        users = append(users, newUser)
+        if err := db.WriteUsers(users); err != nil </span><span class="cov0" title="0">{
+                return nil, &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "DB_ERROR",
+                                Message: "Failed to save user",
+                                Details: err.Error(),
+                                Hint:    "Please try again later",
+                        },
+                }
+        }</span>
+
+        <span class="cov9" title="22">return &amp;newUser, nil</span>
+}
+
+// Login authenticates a user and returns a session token.
+func Login(req models.LoginRequest) (*models.User, string, *models.ErrorResponse) <span class="cov8" title="16">{
+        // Read users
+        users, err := db.ReadUsers()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, "", &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "DB_ERROR",
+                                Message: "Failed to read user database",
+                                Details: err.Error(),
+                                Hint:    "Please try again later",
+                        },
+                }
+        }</span>
+
+        // Find user by email
+        <span class="cov8" title="16">var user *models.User
+        for i := range users </span><span class="cov8" title="17">{
+                if users[i].Email == req.Email </span><span class="cov7" title="14">{
+                        user = &amp;users[i]
+                        break</span>
+                }
+        }
+
+        <span class="cov8" title="16">if user == nil </span><span class="cov2" title="2">{
+                return nil, "", &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "INVALID_CREDENTIALS",
+                                Message: "Invalid email or password",
+                                Hint:    "Check your credentials and try again",
+                        },
+                }
+        }</span>
+
+        // Verify password
+        <span class="cov7" title="14">valid, err := crypto.VerifyPassword(req.Password, user.PasswordHash, user.Salt)
+        if err != nil || !valid </span><span class="cov6" title="8">{
+                return nil, "", &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "INVALID_CREDENTIALS",
+                                Message: "Invalid email or password",
+                                Hint:    "Check your credentials and try again",
+                        },
+                }
+        }</span>
+
+        // Generate session token
+        <span class="cov5" title="6">token, err := crypto.GenerateToken()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, "", &amp;models.ErrorResponse{
+                        Success: false,
+                        Error: models.ErrorDetail{
+                                Code:    "CRYPTO_ERROR",
+                                Message: "Failed to generate session token",
+                                Details: err.Error(),
+                                Hint:    "Please try again",
+                        },
+                }
+        }</span>
+
+        <span class="cov5" title="6">return user, token, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">package crypto
+
+import (
+        "crypto/rand"
+        "crypto/sha512"
+        "encoding/hex"
+        "fmt"
+        "time"
+        "unicode"
+        "pulse-backend/internal/config"
+        "pulse-backend/internal/models"
+        "golang.org/x/crypto/pbkdf2"
+)
+
+// HashPassword hashes a password with salt using PBKDF2.
+func HashPassword(password, saltHex string) (string, error) <span class="cov6" title="11">{
+        salt, err := hex.DecodeString(saltHex)
+        if err != nil </span><span class="cov0" title="0">{
+                return "", fmt.Errorf("invalid salt hex: %w", err)
+        }</span>
+        <span class="cov6" title="11">key := pbkdf2.Key([]byte(password), salt, config.PBKDF2Iterations, config.PBKDF2KeyLen, sha512.New)
+        return hex.EncodeToString(key), nil</span>
+}
+
+// VerifyPassword verifies a password against its stored hash.
+func VerifyPassword(password, storedHash, saltHex string) (bool, error) <span class="cov5" title="7">{
+        computed, err := HashPassword(password, saltHex)
+        if err != nil </span><span class="cov0" title="0">{
+                return false, err
+        }</span>
+        <span class="cov5" title="7">return computed == storedHash, nil</span>
+}
+
+// GenerateSalt creates a random 16-byte hex salt.
+func GenerateSalt() (string, error) <span class="cov4" title="5">{
+        b := make([]byte, config.SaltBytes)
+        if _, err := rand.Read(b); err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov4" title="5">return hex.EncodeToString(b), nil</span>
+}
+
+// GenerateToken creates a 32-byte random hex session token.
+func GenerateToken() (string, error) <span class="cov2" title="2">{
+        b := make([]byte, config.TokenBytes)
+        if _, err := rand.Read(b); err != nil </span><span class="cov0" title="0">{
+                return "", err
+        }</span>
+        <span class="cov2" title="2">return hex.EncodeToString(b), nil</span>
+}
+
+// GenerateID generates a unique user ID.
+func GenerateID() string <span class="cov2" title="2">{
+        b := make([]byte, 4)
+        rand.Read(b) //nolint:errcheck
+        return fmt.Sprintf("%s-%s",
+                strconv36(time.Now().UnixMilli()),
+                hex.EncodeToString(b),
+        )
+}</span>
+
+// strconv36 is a base-36 encoder.
+func strconv36(n int64) string <span class="cov2" title="2">{
+        const digits = "0123456789abcdefghijklmnopqrstuvwxyz"
+        if n == 0 </span><span class="cov0" title="0">{
+                return "0"
+        }</span>
+        <span class="cov2" title="2">buf := make([]byte, 0, 13)
+        for n &gt; 0 </span><span class="cov7" title="16">{
+                buf = append([]byte{digits[n%36]}, buf...)
+                n /= 36
+        }</span>
+        <span class="cov2" title="2">return string(buf)</span>
+}
+
+// ValidatePasswordStrength validates password requirements.
+func ValidatePasswordStrength(password string) models.PasswordValidation <span class="cov4" title="6">{
+        var hasUpper, hasLower, hasNumber bool
+        for _, r := range password </span><span class="cov10" title="60">{
+                switch </span>{
+                case unicode.IsUpper(r):<span class="cov6" title="15">
+                        hasUpper = true</span>
+                case unicode.IsLower(r):<span class="cov8" title="31">
+                        hasLower = true</span>
+                case unicode.IsNumber(r):<span class="cov6" title="14">
+                        hasNumber = true</span>
+                }
+        }
+        <span class="cov4" title="6">isLong := len(password) &gt;= config.MinPasswordLength
+
+        var errs []string
+        if !hasUpper </span><span class="cov1" title="1">{
+                errs = append(errs, "must contain at least one uppercase letter")
+        }</span>
+        <span class="cov4" title="6">if !hasLower </span><span class="cov1" title="1">{
+                errs = append(errs, "must contain at least one lowercase letter")
+        }</span>
+        <span class="cov4" title="6">if !hasNumber </span><span class="cov1" title="1">{
+                errs = append(errs, "must contain at least one number")
+        }</span>
+        <span class="cov4" title="6">if !isLong </span><span class="cov1" title="1">{
+                errs = append(errs, fmt.Sprintf("must be at least %d characters long", config.MinPasswordLength))
+        }</span>
+
+        <span class="cov4" title="6">return models.PasswordValidation{
+                IsValid:            len(errs) == 0,
+                Errors:             errs,
+                HasCaseSensitivity: hasUpper &amp;&amp; hasLower,
+        }</span>
+}
+</pre>
+		
+		<pre class="file" id="file3" style="display: none">package db
+
+import (
+        "encoding/json"
+        "fmt"
+        "io/ioutil"
+        "os"
+        "sync"
+        "pulse-backend/internal/models"
+)
+
+var (
+        mu     sync.RWMutex
+        dbFile string
+)
+
+// Init initializes the database with a given file path.
+func Init(path string) <span class="cov0" title="0">{
+        mu.Lock()
+        defer mu.Unlock()
+        dbFile = path
+}</span>
+
+// ReadUsers reads all users from the database file.
+func ReadUsers() ([]models.User, error) <span class="cov0" title="0">{
+        mu.RLock()
+        defer mu.RUnlock()
+
+        if dbFile == "" </span><span class="cov0" title="0">{
+                return nil, fmt.Errorf("database not initialized")
+        }</span>
+
+        <span class="cov0" title="0">content, err := ioutil.ReadFile(dbFile)
+        if err != nil </span><span class="cov0" title="0">{
+                // If file doesn't exist, return empty list
+                if os.IsNotExist(err) </span><span class="cov0" title="0">{
+                        return []models.User{}, nil
+                }</span>
+                <span class="cov0" title="0">return nil, err</span>
+        }
+
+        <span class="cov0" title="0">var users []models.User
+        if err := json.Unmarshal(content, &amp;users); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+        <span class="cov0" title="0">return users, nil</span>
+}
+
+// WriteUsers writes all users to the database file.
+func WriteUsers(users []models.User) error <span class="cov0" title="0">{
+        mu.Lock()
+        defer mu.Unlock()
+
+        if dbFile == "" </span><span class="cov0" title="0">{
+                return fmt.Errorf("database not initialized")
+        }</span>
+
+        <span class="cov0" title="0">content, err := json.MarshalIndent(users, "", "  ")
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+        <span class="cov0" title="0">return ioutil.WriteFile(dbFile, content, 0644)</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">package handlers
+
+import (
+        "encoding/json"
+        "fmt"
+        "log"
+        "net/http"
+        "time"
+        "pulse-backend/internal/auth"
+        "pulse-backend/internal/db"
+        "pulse-backend/internal/models"
+        "pulse-backend/internal/response"
+)
+
+// SignupHandler handles POST /auth/signup requests.
+func SignupHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("METHOD_NOT_ALLOWED", "Method not allowed", nil, "Use POST method")
+                response.APIError(r, http.StatusMethodNotAllowed, errResp)
+                response.JSONResponse(w, http.StatusMethodNotAllowed, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">var req models.SignupRequest
+        if err := json.NewDecoder(r.Body).Decode(&amp;req); err != nil </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("INVALID_REQUEST", "Invalid request body", err.Error(), "Check your request JSON")
+                response.APIError(r, http.StatusBadRequest, errResp)
+                response.JSONResponse(w, http.StatusBadRequest, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">user, errResp := auth.Signup(req)
+        if errResp != nil </span><span class="cov0" title="0">{
+                response.APIError(r, http.StatusBadRequest, *errResp)
+                response.JSONResponse(w, http.StatusBadRequest, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">resp := models.SignupResponse{
+                Success: true,
+                User:    user.ToPublic(),
+        }
+        log.Printf("[INFO] %s %s | user=%s | signup successful", r.Method, r.URL.Path, user.Email)
+        response.JSONResponse(w, http.StatusCreated, resp)</span>
+}
+
+// LoginHandler handles POST /auth/login requests.
+func LoginHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        if r.Method != http.MethodPost </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("METHOD_NOT_ALLOWED", "Method not allowed", nil, "Use POST method")
+                response.APIError(r, http.StatusMethodNotAllowed, errResp)
+                response.JSONResponse(w, http.StatusMethodNotAllowed, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">var req models.LoginRequest
+        if err := json.NewDecoder(r.Body).Decode(&amp;req); err != nil </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("INVALID_REQUEST", "Invalid request body", err.Error(), "Check your request JSON")
+                response.APIError(r, http.StatusBadRequest, errResp)
+                response.JSONResponse(w, http.StatusBadRequest, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">user, token, errResp := auth.Login(req)
+        if errResp != nil </span><span class="cov0" title="0">{
+                response.APIError(r, http.StatusUnauthorized, *errResp)
+                response.JSONResponse(w, http.StatusUnauthorized, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">expiresAt := time.Now().Add(24 * time.Hour).Format(time.RFC3339)
+        resp := models.LoginResponse{
+                Success:   true,
+                User:      user.ToPublic(),
+                Token:     token,
+                ExpiresAt: expiresAt,
+        }
+        log.Printf("[INFO] %s %s | user=%s | login successful", r.Method, r.URL.Path, user.Email)
+        response.JSONResponse(w, http.StatusOK, resp)</span>
+}
+
+// UsersHandler handles GET /api/users requests.
+func UsersHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        if r.Method != http.MethodGet </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("METHOD_NOT_ALLOWED", "Method not allowed", nil, "Use GET method")
+                response.APIError(r, http.StatusMethodNotAllowed, errResp)
+                response.JSONResponse(w, http.StatusMethodNotAllowed, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">users, err := db.ReadUsers()
+        if err != nil </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("DB_ERROR", "Failed to read users", err.Error(), "Try again later")
+                response.APIError(r, http.StatusInternalServerError, errResp)
+                response.JSONResponse(w, http.StatusInternalServerError, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">publicUsers := make([]models.PublicUser, len(users))
+        for i, u := range users </span><span class="cov0" title="0">{
+                publicUsers[i] = u.ToPublic()
+        }</span>
+
+        <span class="cov0" title="0">resp := models.UsersResponse{
+                Success: true,
+                Users:   publicUsers,
+        }
+        log.Printf("[INFO] %s %s | returned %d users", r.Method, r.URL.Path, len(publicUsers))
+        response.JSONResponse(w, http.StatusOK, resp)</span>
+}
+
+// HealthHandler handles GET /api/health requests.
+func HealthHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        if r.Method != http.MethodGet </span><span class="cov0" title="0">{
+                errResp := response.ErrResp("METHOD_NOT_ALLOWED", "Method not allowed", nil, "Use GET method")
+                response.APIError(r, http.StatusMethodNotAllowed, errResp)
+                response.JSONResponse(w, http.StatusMethodNotAllowed, errResp)
+                return
+        }</span>
+
+        <span class="cov0" title="0">resp := models.HealthResponse{
+                Status:    "healthy",
+                Timestamp: time.Now().UTC().Format(time.RFC3339),
+                Uptime:    0.0,
+        }
+        log.Printf("[INFO] %s %s | health check", r.Method, r.URL.Path)
+        response.JSONResponse(w, http.StatusOK, resp)</span>
+}
+
+// NotFoundHandler handles 404 requests.
+func NotFoundHandler(w http.ResponseWriter, r *http.Request) <span class="cov0" title="0">{
+        errResp := response.ErrResp("NOT_FOUND", "Endpoint not found", nil, fmt.Sprintf("No handler for %s %s", r.Method, r.URL.Path))
+        response.APIError(r, http.StatusNotFound, errResp)
+        response.JSONResponse(w, http.StatusNotFound, errResp)
+}</span>
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">package models
+
+// PasswordMetadata mirrors the passwordMetadata field stored in persons.json.
+type PasswordMetadata struct {
+        CaseSensitive    bool `json:"caseSensitive"`
+        RequiresUpperCase bool `json:"requiresUpperCase"`
+        RequiresLowerCase bool `json:"requiresLowerCase"`
+        RequiresNumber   bool `json:"requiresNumber"`
+        MinimumLength    int  `json:"minimumLength"`
+}
+
+// User is the full user record stored in persons.json (including secrets).
+type User struct {
+        ID               string           `json:"id"`
+        Username         string           `json:"username"`
+        Email            string           `json:"email"`
+        PasswordHash     string           `json:"passwordHash"`
+        Salt             string           `json:"salt"`
+        PasswordMetadata PasswordMetadata `json:"passwordMetadata"`
+        CreatedAt        string           `json:"createdAt"`
+}
+
+// PublicUser is the safe subset returned in API responses (no hash/salt).
+type PublicUser struct {
+        ID               string           `json:"id"`
+        Username         string           `json:"username"`
+        Email            string           `json:"email"`
+        PasswordMetadata PasswordMetadata `json:"passwordMetadata"`
+        CreatedAt        string           `json:"createdAt"`
+}
+
+// ToPublic strips sensitive fields from a User.
+func (u User) ToPublic() PublicUser <span class="cov0" title="0">{
+        return PublicUser{
+                ID:               u.ID,
+                Username:         u.Username,
+                Email:            u.Email,
+                PasswordMetadata: u.PasswordMetadata,
+                CreatedAt:        u.CreatedAt,
+        }
+}</span>
+
+// SignupRequest - request body for signup
+type SignupRequest struct {
+        Username string `json:"username"`
+        Email    string `json:"email"`
+        Password string `json:"password"`
+}
+
+// LoginRequest - request body for login
+type LoginRequest struct {
+        Email    string `json:"email"`
+        Password string `json:"password"`
+}
+
+// ErrorDetail - error response detail
+type ErrorDetail struct {
+        Code    string      `json:"code"`
+        Message string      `json:"message"`
+        Details interface{} `json:"details,omitempty"`
+        Hint    string      `json:"hint,omitempty"`
+}
+
+// ErrorResponse - error response envelope
+type ErrorResponse struct {
+        Success bool        `json:"success"`
+        Error   ErrorDetail `json:"error"`
+}
+
+// SignupResponse - response for signup
+type SignupResponse struct {
+        Success bool       `json:"success"`
+        User    PublicUser `json:"user"`
+}
+
+// LoginResponse - response for login
+type LoginResponse struct {
+        Success   bool       `json:"success"`
+        User      PublicUser `json:"user"`
+        Token     string     `json:"token"`
+        ExpiresAt string     `json:"expiresAt"`
+}
+
+// UsersResponse - response for users list
+type UsersResponse struct {
+        Success bool         `json:"success"`
+        Users   []PublicUser `json:"users"`
+}
+
+// HealthResponse - response for health check
+type HealthResponse struct {
+        Status    string  `json:"status"`
+        Timestamp string  `json:"timestamp"`
+        Uptime    float64 `json:"uptime"`
+}
+
+// PasswordValidation - password validation result
+type PasswordValidation struct {
+        IsValid            bool
+        Errors            []string
+        HasCaseSensitivity bool
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">package response
+
+import (
+        "encoding/json"
+        "fmt"
+        "log"
+        "net/http"
+        "pulse-backend/internal/models"
+)
+
+// JSONResponse writes a JSON body with the given HTTP status code.
+func JSONResponse(w http.ResponseWriter, status int, payload interface{}) <span class="cov0" title="0">{
+        w.Header().Set("Content-Type", "application/json")
+        w.WriteHeader(status)
+        json.NewEncoder(w).Encode(payload) //nolint:errcheck
+}</span>
+
+// ErrResp creates an error response.
+func ErrResp(code, message string, details interface{}, hint string) models.ErrorResponse <span class="cov0" title="0">{
+        return models.ErrorResponse{
+                Success: false,
+                Error: models.ErrorDetail{
+                        Code:    code,
+                        Message: message,
+                        Details: details,
+                        Hint:    hint,
+                },
+        }
+}</span>
+
+// APIError logs error and returns error response.
+func APIError(r *http.Request, status int, resp models.ErrorResponse) models.ErrorResponse <span class="cov0" title="0">{
+        hint := ""
+        if resp.Error.Hint != "" </span><span class="cov0" title="0">{
+                hint = fmt.Sprintf(" | hint=%s", resp.Error.Hint)
+        }</span>
+        <span class="cov0" title="0">log.Printf("[ERROR] %s %s | %d | code=%s | msg=%s%s",
+                r.Method, r.URL.Path, status, resp.Error.Code, resp.Error.Message, hint)
+        return resp</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>
